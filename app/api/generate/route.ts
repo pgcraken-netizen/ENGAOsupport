@@ -3,6 +3,13 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  if (!process.env.OPENAI_API_KEY) {
+    return Response.json(
+      { error: "OpenAI APIキーが設定されていません。Vercelの環境変数を確認してください。" },
+      { status: 500 }
+    );
+  }
+
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const { activity, statuses, event } = await request.json();
 
@@ -56,10 +63,15 @@ export async function POST(request: Request) {
     const text = response.choices[0].message.content?.trim() ?? "";
     return Response.json({ text });
   } catch (err) {
-    console.error(err);
-    return Response.json(
-      { error: "生成に失敗しました。APIキーを確認してください。" },
-      { status: 500 }
-    );
+    console.error("OpenAI error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    // 401: キー無効、429: 残高不足・制限超過
+    if (message.includes("401") || message.includes("Incorrect API key")) {
+      return Response.json({ error: "APIキーが無効です。Vercelの環境変数を更新してRedeployしてください。" }, { status: 500 });
+    }
+    if (message.includes("429") || message.includes("quota")) {
+      return Response.json({ error: "OpenAIの利用上限に達しました。プランまたは残高を確認してください。" }, { status: 500 });
+    }
+    return Response.json({ error: `生成エラー: ${message}` }, { status: 500 });
   }
 }
