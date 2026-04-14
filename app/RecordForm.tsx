@@ -118,9 +118,14 @@ export default function RecordForm() {
           event: eventText,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setGeneratedText(data.text);
+      let data: { text?: string; error?: string } = {};
+      const text = await res.text();
+      if (text) {
+        try { data = JSON.parse(text); } catch { throw new Error("サーバーエラーが発生しました"); }
+      }
+      if (!res.ok) throw new Error(data.error ?? `エラー (${res.status})`);
+      if (!data.text) throw new Error("生成結果が空でした。もう一度お試しください");
+      setGeneratedText(data.text!);
 
       // Save to history
       const item: HistoryItem = {
