@@ -1,5 +1,5 @@
-import RecordForm from "./RecordForm";
+import LiffApp from "./LiffApp";
 
 export default function Home() {
-  return <RecordForm />;
+  return <LiffApp />;
 }

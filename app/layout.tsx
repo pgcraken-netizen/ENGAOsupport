@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "えんがお放課後 記録支援",
-  description: "放課後等デイサービス 記録作成支援アプリ",
+  title: "えんがお スタッフ支援",
+  description: "特別介護施設えんがお スタッフ記録支援LIFFアプリ",
 };
 
 export const viewport: Viewport = {

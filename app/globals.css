@@ -53,3 +53,21 @@ body {
     --tag-selected: #1e3328;
   }
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--green-light);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto;
+}
+
+button:active {
+  transform: scale(0.97);
+}
