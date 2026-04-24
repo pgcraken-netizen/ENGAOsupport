@@ -71,3 +71,38 @@ body {
 button:active {
   transform: scale(0.97);
 }
+
+/* ── 印刷スタイル ── */
+.print-only { display: none; }
+
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+  }
+
+  table {
+    page-break-inside: auto;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 10pt;
+  }
+
+  tr { page-break-inside: avoid; }
+
+  th, td {
+    border: 1px solid #ccc !important;
+    padding: 5px 8px !important;
+  }
+
+  section { page-break-inside: avoid; margin-bottom: 20pt; }
+
+  @page {
+    margin: 15mm;
+    size: A4 landscape;
+  }
+}
