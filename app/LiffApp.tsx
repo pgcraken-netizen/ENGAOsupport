@@ -80,7 +80,7 @@ export default function LiffApp() {
 
       if (!staffRow) {
         setErrorMsg(
-          "このLINEアカウントは登録されていません。\n管理者にご連絡ください。",
+          `このLINEアカウントは登録されていません。\n\nあなたのLINE User ID:\n${profile.userId}\n\nこのIDをSupabaseのstaffテーブルに登録してください。`,
         );
         setPhase("error");
         return;
