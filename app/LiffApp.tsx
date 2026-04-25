@@ -71,16 +71,18 @@ export default function LiffApp() {
 
       const profile = await liff.getProfile();
 
-      const { data: staffRow, error: staffError } = await supabase
+      const { data: staffRows } = await supabase
         .from("staff")
         .select("id, name, line_user_id, is_active")
         .eq("line_user_id", profile.userId)
         .eq("is_active", true)
-        .single();
+        .limit(1);
 
-      if (staffError || !staffRow) {
+      const staffRow = staffRows?.[0] ?? null;
+
+      if (!staffRow) {
         setErrorMsg(
-          `このLINEアカウントは登録されていません。\n\nLINE User ID:\n${profile.userId}\n\nDB Error: ${staffError?.message ?? "row not found"}\nCode: ${staffError?.code ?? "-"}`,
+          `このLINEアカウントは登録されていません。\n管理者にご連絡ください。\n\nID: ${profile.userId}`,
         );
         setPhase("error");
         return;
