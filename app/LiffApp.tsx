@@ -35,6 +35,7 @@ export default function LiffApp() {
   const [condition,  setCondition]  = useState<Condition | null>(null);
   const [note,       setNote]       = useState("");
   const [search,     setSearch]     = useState("");
+  const [unitFilter, setUnitFilter] = useState<string | null>(null);
 
   useEffect(() => { initApp(); }, []);
 
@@ -84,7 +85,7 @@ export default function LiffApp() {
   }
 
   function startNext() {
-    setRecordStep("select"); setSelected(null); setMeal(null); setCondition(null); setNote(""); setSearch("");
+    setRecordStep("select"); setSelected(null); setMeal(null); setCondition(null); setNote(""); setSearch(""); setUnitFilter(null);
   }
 
   // ── Render ──
@@ -103,14 +104,14 @@ export default function LiffApp() {
     </div></FullCenter>
   );
 
-  const filtered = residents.filter(r =>
-    !search || r.name.includes(search) || (r.kana ?? "").includes(search) || (r.room ?? "").includes(search)
-  );
+  const filtered = residents.filter(r => {
+    const matchSearch = !search || r.name.includes(search) || (r.kana ?? "").includes(search) || (r.room ?? "").includes(search);
+    const matchUnit   = !unitFilter || (r.unit ?? "その他") === unitFilter;
+    return matchSearch && matchUnit;
+  });
 
-  // ユニット別グループ化
-  const units = search
-    ? null
-    : Array.from(new Set(residents.map(r => r.unit ?? "その他")));
+  const units = Array.from(new Set(residents.map(r => r.unit ?? "その他")));
+  const isFiltering = !!search || !!unitFilter;
 
   const showTabBar = activeTab === "view" || recordStep === "select";
   const showBack   = activeTab === "record" && (recordStep === "form" || recordStep === "saving");
@@ -118,7 +119,7 @@ export default function LiffApp() {
   const headerTitle =
     activeTab === "view" ? "記録を閲覧" :
     recordStep === "form" || recordStep === "saving" ? (selected?.name ?? "記録入力") :
-    recordStep === "success" ? "保存完了" : "えんがお スタッフ支援";
+    recordStep === "success" ? "保存完了" : "誰の記録をしますか？";
 
   return (
     <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
@@ -165,7 +166,24 @@ export default function LiffApp() {
             {/* 利用者選択 */}
             {recordStep === "select" && (
               <>
-                <div style={{ padding: "12px 16px 8px", flexShrink: 0 }}>
+                <div style={{ padding: "12px 16px 8px", flexShrink: 0, borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
+                  {/* ユニット絞り込みボタン */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                    <button onClick={() => setUnitFilter(null)} style={{
+                      flex: 1, padding: "9px 0", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      background: !unitFilter ? "var(--green)" : "var(--surface-2)",
+                      color: !unitFilter ? "#fff" : "var(--text-secondary)",
+                      border: `1px solid ${!unitFilter ? "var(--green)" : "var(--border)"}`,
+                    }}>すべて</button>
+                    {units.map(u => (
+                      <button key={u} onClick={() => setUnitFilter(unitFilter === u ? null : u)} style={{
+                        flex: 1, padding: "9px 0", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                        background: unitFilter === u ? "var(--green)" : "var(--surface-2)",
+                        color: unitFilter === u ? "#fff" : "var(--text-secondary)",
+                        border: `1px solid ${unitFilter === u ? "var(--green)" : "var(--border)"}`,
+                      }}>{u}</button>
+                    ))}
+                  </div>
                   <input type="search" value={search} onChange={e => setSearch(e.target.value)}
                     placeholder="名前・ふりがな・部屋番号で絞り込み" style={inputStyle} />
                 </div>
@@ -174,12 +192,12 @@ export default function LiffApp() {
                     <p style={emptyStyle}>利用者が登録されていません</p>
                   ) : filtered.length === 0 ? (
                     <p style={emptyStyle}>該当する利用者がいません</p>
-                  ) : search ? (
-                    /* 検索中はフラット表示 */
+                  ) : isFiltering ? (
+                    /* 絞り込み中はフラット表示 */
                     filtered.map(r => <ResidentRow key={r.id} r={r} onSelect={selectResident} />)
                   ) : (
                     /* 通常はユニット別グループ表示 */
-                    units!.map(unit => (
+                    units.map(unit => (
                       <div key={unit}>
                         <div style={{ padding: "10px 16px 6px", background: "var(--surface-2)", borderBottom: "1px solid var(--border)", position: "sticky", top: 0, zIndex: 1 }}>
                           <span style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", letterSpacing: "0.05em" }}>● {unit}</span>
