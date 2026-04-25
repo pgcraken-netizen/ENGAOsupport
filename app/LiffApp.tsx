@@ -62,7 +62,7 @@ export default function LiffApp() {
   async function initApp() {
     try {
       const { default: liff } = await import("@line/liff");
-      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! });
+      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID ?? "2009872553-lEutIel4" });
 
       if (!liff.isLoggedIn()) {
         liff.login();
