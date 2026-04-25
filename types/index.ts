@@ -6,5 +6,6 @@ export type Resident = {
   name: string;
   kana: string | null;
   room: string | null;
+  unit: string | null;
   is_active: boolean;
 };

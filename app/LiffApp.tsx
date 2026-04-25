@@ -51,9 +51,10 @@ export default function LiffApp() {
 
       const { data } = await supabase
         .from("residents")
-        .select("id, name, kana, room, is_active")
+        .select("id, name, kana, room, unit, is_active")
         .eq("is_active", true)
-        .order("kana");
+        .order("unit")
+        .order("name");
 
       setResidents(data ?? []);
       setPhase("ready");
@@ -105,6 +106,11 @@ export default function LiffApp() {
   const filtered = residents.filter(r =>
     !search || r.name.includes(search) || (r.kana ?? "").includes(search) || (r.room ?? "").includes(search)
   );
+
+  // ユニット別グループ化
+  const units = search
+    ? null
+    : Array.from(new Set(residents.map(r => r.unit ?? "その他")));
 
   const showTabBar = activeTab === "view" || recordStep === "select";
   const showBack   = activeTab === "record" && (recordStep === "form" || recordStep === "saving");
@@ -168,22 +174,22 @@ export default function LiffApp() {
                     <p style={emptyStyle}>利用者が登録されていません</p>
                   ) : filtered.length === 0 ? (
                     <p style={emptyStyle}>該当する利用者がいません</p>
-                  ) : filtered.map(r => (
-                    <button key={r.id} onClick={() => selectResident(r)} style={rowStyle}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <Avatar name={r.name} />
-                        <div style={{ textAlign: "left" }}>
-                          <div style={{ fontSize: 17, fontWeight: 600, color: "var(--text-primary)" }}>{r.name}</div>
-                          {(r.kana || r.room) && (
-                            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                              {[r.kana, r.room && `${r.room}号室`].filter(Boolean).join("　")}
-                            </div>
-                          )}
+                  ) : search ? (
+                    /* 検索中はフラット表示 */
+                    filtered.map(r => <ResidentRow key={r.id} r={r} onSelect={selectResident} />)
+                  ) : (
+                    /* 通常はユニット別グループ表示 */
+                    units!.map(unit => (
+                      <div key={unit}>
+                        <div style={{ padding: "10px 16px 6px", background: "var(--surface-2)", borderBottom: "1px solid var(--border)", position: "sticky", top: 0, zIndex: 1 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", letterSpacing: "0.05em" }}>● {unit}</span>
                         </div>
+                        {residents.filter(r => (r.unit ?? "その他") === unit).map(r => (
+                          <ResidentRow key={r.id} r={r} onSelect={selectResident} />
+                        ))}
                       </div>
-                      <span style={{ color: "var(--text-muted)", fontSize: 22 }}>›</span>
-                    </button>
-                  ))}
+                    ))
+                  )}
                 </div>
               </>
             )}
@@ -276,6 +282,25 @@ export default function LiffApp() {
         )}
       </main>
     </div>
+  );
+}
+
+function ResidentRow({ r, onSelect }: { r: Resident; onSelect: (r: Resident) => void }) {
+  return (
+    <button onClick={() => onSelect(r)} style={rowStyle}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <Avatar name={r.name} />
+        <div style={{ textAlign: "left" }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: "var(--text-primary)" }}>{r.name}</div>
+          {(r.kana || r.room) && (
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+              {[r.kana, r.room && `${r.room}号室`].filter(Boolean).join("　")}
+            </div>
+          )}
+        </div>
+      </div>
+      <span style={{ color: "var(--text-muted)", fontSize: 22 }}>›</span>
+    </button>
   );
 }
 

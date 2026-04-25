@@ -1,12 +1,8 @@
 -- ============================================================
--- えんがお スタッフ支援LIFFアプリ  Supabase スキーマ定義 v2
--- ============================================================
--- Supabase ダッシュボード > SQL Editor に貼り付けて実行してください
+-- えんがお スタッフ支援LIFFアプリ  Supabase スキーマ定義 v3
 -- ============================================================
 
--- 既存テーブルを全削除（再実行可能）
 DROP TABLE IF EXISTS records   CASCADE;
-DROP TABLE IF EXISTS staff     CASCADE;
 DROP TABLE IF EXISTS residents CASCADE;
 
 -- ── テーブル作成 ──────────────────────────────────────────
@@ -16,6 +12,7 @@ CREATE TABLE residents (
   name       TEXT NOT NULL,
   kana       TEXT,
   room       TEXT,
+  unit       TEXT,                              -- グループ名（つむぎ / ひととなり / むすび）
   is_active  BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -43,13 +40,26 @@ CREATE POLICY "records_insert"   ON records   FOR INSERT WITH CHECK (true);
 -- ── 権限付与 ──────────────────────────────────────────────
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT SELECT           ON residents TO anon, authenticated;
-GRANT SELECT, INSERT   ON records   TO anon, authenticated;
+GRANT SELECT         ON residents TO anon, authenticated;
+GRANT SELECT, INSERT ON records   TO anon, authenticated;
 
--- ── サンプル利用者データ（必要に応じてコメント解除） ────
+-- ── 利用者データ ──────────────────────────────────────────
 
--- INSERT INTO residents (name, kana, room) VALUES
---   ('田中 一郎', 'たなか いちろう', '101'),
---   ('佐藤 幸子', 'さとう ゆきこ',   '102'),
---   ('伊藤 健二', 'いとう けんじ',   '201'),
---   ('渡辺 みよ', 'わたなべ みよ',   '202');
+INSERT INTO residents (name, unit) VALUES
+  ('小高純雄', 'つむぎ'),
+  ('中村真一', 'つむぎ'),
+  ('伊藤靖彦', 'つむぎ'),
+  ('須永翔大', 'つむぎ'),
+  ('大野次男', 'つむぎ'),
+  ('井上靖則', 'つむぎ'),
+  ('古谷真悠', 'ひととなり'),
+  ('福田有希', 'ひととなり'),
+  ('尾引里美', 'ひととなり'),
+  ('菰方加代子', 'ひととなり'),
+  ('後藤彩香', 'ひととなり'),
+  ('佐藤瑠南', 'ひととなり'),
+  ('花塚有紗', 'ひととなり'),
+  ('福田勝徳', 'むすび'),
+  ('國井文隆', 'むすび'),
+  ('石下竜哉', 'むすび'),
+  ('大宮司透', 'むすび');
