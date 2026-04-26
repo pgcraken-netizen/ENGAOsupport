@@ -1,18 +1,12 @@
--- ============================================================
--- えんがお スタッフ支援LIFFアプリ  Supabase スキーマ定義 v3
--- ============================================================
-
 DROP TABLE IF EXISTS records   CASCADE;
 DROP TABLE IF EXISTS residents CASCADE;
-
--- ── テーブル作成 ──────────────────────────────────────────
 
 CREATE TABLE residents (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name       TEXT NOT NULL,
   kana       TEXT,
   room       TEXT,
-  unit       TEXT,                              -- グループ名（つむぎ / ひととなり / むすび）
+  unit       TEXT,
   is_active  BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -28,8 +22,6 @@ CREATE TABLE records (
   recorded_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- ── RLS ──────────────────────────────────────────────────
-
 ALTER TABLE residents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE records   ENABLE ROW LEVEL SECURITY;
 
@@ -37,13 +29,9 @@ CREATE POLICY "residents_select" ON residents FOR SELECT USING (true);
 CREATE POLICY "records_select"   ON records   FOR SELECT USING (true);
 CREATE POLICY "records_insert"   ON records   FOR INSERT WITH CHECK (true);
 
--- ── 権限付与 ──────────────────────────────────────────────
-
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT         ON residents TO anon, authenticated;
 GRANT SELECT, INSERT ON records   TO anon, authenticated;
-
--- ── 利用者データ ──────────────────────────────────────────
 
 INSERT INTO residents (name, unit) VALUES
   ('小高純雄', 'つむぎ'),
